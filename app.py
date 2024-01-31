@@ -171,13 +171,80 @@ def study_from_reportid():
         "response":result
     }
 
+@app.route('/api/studyfromanyid', methods=['GET','POST'])
+def study_from_any_id():
 
+    """
+    Combining api calls to retrieve the studies that are associated with search hits from linked tables:report, intervention,outcome.
+
+    JSON param 'return_as':
+        'dict': simply returns a list of dictionaries.
+        'ris': TODO we can return a RIS fiel as single string for direct reference download, if needed?
+        'pubmed': TODO
+
+
+    usage: print(requests.post('http://localhost:9090/api/studyfromanyid', json={"table":"report","input":[149,218]}).text)
+    :return:
+    """
+    data = flask.request.json
+
+    ids = data.get('input', False)
+    print(ids)
+
+    dat_type=data.get('table', False)
+
+    if dat_type=='report':
+        esknn.set_index_name("tblstudyreport")
+        ret_field="CRGReportID"#the field to search
+    elif dat_type=='condition':
+        esknn.set_index_name("tblstudyhealthcarecondition")
+        ret_field="HealthCareConditionID"#the field to search
+    elif dat_type=='intervention':
+        esknn.set_index_name("tblstudyintervention")
+        ret_field="InterventionID"#the field to search
+    elif dat_type=='outcome':
+        esknn.set_index_name("tblstudyoutcome")
+        ret_field="OutcomeID"#the field to search
+    elif dat_type == 'study':
+        esknn.set_index_name("tblstudy")
+        ret_field = "CRGStudyID"  # the field to search
+
+
+
+    else:
+        return {
+            "status": 400,
+            "response": "Your request did not include a valid input parameter for table. try report, condition, intervention, or outcome on the 'table' parameter. "
+        }
+
+    if ids:
+        result = esknn.retrieve_documents(ids,ret_field=ret_field)#get study ID data from report ids
+        ids=[d['CRGStudyID'] for d in result]
+
+
+        esknn.set_index_name("tblstudy")#get study metadata
+        ret_field = "CRGStudyID"  # the field to search
+        #
+        result = esknn.retrieve_documents(ids, ret_field=ret_field)
+
+
+
+    else:
+        return {
+                "status": 400,
+                "response": "Your request did not include a search query. Try including a key-value pair in this format: {\"input\":\"title:\"genome dried\"~15\"} "
+            }
+
+    return {
+        "status": 200,
+        "response":result
+    }
 # Search documents route
 @app.route('/api/search_query', methods=['GET','POST'])
 def search_query():
 
     """
-    Make a search via query string but return only one field specified by ret_field. Per default this should be OpenAlex ID.
+    Make a search via query string but return only one field specified by ret_field. .
 
     Usage:
         print(requests.post('http://localhost:9090/api/search_query', json={"input":"title:\"genome dried\"~15", "ret_field":"title"}).text)
