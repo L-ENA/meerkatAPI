@@ -75,24 +75,12 @@ def set_names():
         )
 
 
-# # Insert a new document route
-# @app.route('/api/insert_document')
-# def insert_document():
-#     data = flask.request.json
-#
-#     esknn.insert_document(data)
-#
-#     return jsonify(
-#         {
-#             "status": 200
-#         }
-#     )
 
 @app.route('/api/direct_retrieval', methods=['GET','POST'])
 def direct_retrieval():
 
     """
-    Combining search_query and get_document calls. When used in this function, the elastic database is searched only one.
+    Combining search_query and get_document calls.
 
     input: A string that is an elastic-style search query, for example "Abstract:schizo* AND Authors:*dams"
     index: The index name to search, for example 'tblreport'
@@ -124,11 +112,11 @@ def direct_retrieval():
         "response":result
     }
 
-@app.route('/api/studyfromreportid', methods=['GET','POST'])
-def study_from_reportid():
+@app.route('/api/reportsfromstudyid', methods=['GET','POST'])
+def reports_from_studyid():
 
     """
-    Combining api calls to retrieve the studies that are associated with report hits.
+    Combining api calls to retrieve the reports that are associated with study hits.
 
     JSON param 'return_as':
         'dict': simply returns a list of dictionaries.
@@ -136,7 +124,7 @@ def study_from_reportid():
         'pubmed': TODO
 
 
-    usage: print(requests.post('http://localhost:9090/api/studyfromreportid', json={"input":[149,218]}).text)
+    usage: print(requests.post('http://localhost:9090/api/reportsfromstudyid', json={"input":[138,139]}).text)
     :return:
     """
     data = flask.request.json
@@ -146,15 +134,15 @@ def study_from_reportid():
 
     esknn.set_index_name("tblstudyreport")
 
-    ret_field="CRGReportID"#the field to search
+    ret_field="CRGStudyID"#the field to search
 
     if ids:
-        result = esknn.retrieve_documents(ids,ret_field=ret_field)#get study ID data from report ids
-        ids=[d['CRGStudyID'] for d in result]
+        result = esknn.retrieve_documents(ids,ret_field=ret_field)#get report ID data from study ids
+        ids=[d['CRGReportID'] for d in result]
 
 
-        esknn.set_index_name("tblstudy")#get study metadata
-        ret_field = "CRGStudyID"  # the field to search
+        esknn.set_index_name("tblreport")#get study metadata
+        ret_field = "CRGReportID"  # the field to search
         #
         result = esknn.retrieve_documents(ids, ret_field=ret_field)
 
@@ -308,8 +296,8 @@ def search_query():
 def get_documents():
 
     """
-    JSON param 'input': Submit a list of OpenAlex IDs or any other list of items for any specific field for which all matching documents are retrieved.
-    Default: give OA IDs and retrieve whole documents.
+    JSON param 'input': Submit a list of IDs or any other list of items for any specific field for which all matching documents are retrieved.
+    Default: give IDs and retrieve whole documents.
 
     JSON param 'ret_field': For non-default requests, give 'ret_field' optional parameter, eg to get references
     by 'title', 'DOI', 'PMCID' or anything indexed in this index. Those can also be searched by /api/search_query when DOI or else is given as 'ret_field' parameter there.
