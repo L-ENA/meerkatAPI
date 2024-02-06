@@ -139,6 +139,8 @@ def reports_from_studyid():
     if ids:
         result = esknn.retrieve_documents(ids,ret_field=ret_field)#get report ID data from study ids
         ids=[d['CRGReportID'] for d in result]
+        stids = [d['CRGStudyID'] for d in result]
+        assert len(ids)==len(stids)
 
 
         esknn.set_index_name("tblreport")#get study metadata
@@ -156,7 +158,9 @@ def reports_from_studyid():
 
     return {
         "status": 200,
-        "response":result
+        "response":result,
+        "studyids":stids,
+        "reportids":ids
     }
 
 @app.route('/api/studyfromanyid', methods=['GET','POST'])
