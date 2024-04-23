@@ -132,20 +132,21 @@ def reports_from_studyid():
     ids = data.get('input', False)
     print(ids)
 
-    esknn.set_index_name("tblstudyreport")
+    esknn.set_index_name("tbl_export")
 
     ret_field="CRGStudyID"#the field to search
 
     if ids:
         result = esknn.retrieve_documents(ids,ret_field=ret_field)#get report ID data from study ids
-        ids=[d['CRGReportID'] for d in result]
+        ids=[d['ReportNumber'] for d in result]
         stids = [d['CRGStudyID'] for d in result]
         assert len(ids)==len(stids)
 
 
         esknn.set_index_name("tblreport")#get study metadata
-        ret_field = "CRGReportID"  # the field to search
+        ret_field = "ReportNumber"  # the field to search
         #
+        ids=list(set(ids))
         result = esknn.retrieve_documents(ids, ret_field=ret_field)
 
 
@@ -186,8 +187,8 @@ def study_from_any_id():
     dat_type=data.get('table', False)
 
     if dat_type=='report':
-        esknn.set_index_name("tblstudyreport")
-        ret_field="CRGReportID"#the field to search
+        esknn.set_index_name("tbl_export")
+        ret_field="ReportNumber"#the field to search
     elif dat_type=='condition':
         esknn.set_index_name("tblstudyhealthcarecondition")
         ret_field="HealthCareConditionID"#the field to search
@@ -211,7 +212,8 @@ def study_from_any_id():
 
     if ids:
         result = esknn.retrieve_documents(ids,ret_field=ret_field)#get study ID data from report ids
-        ids=[d['CRGStudyID'] for d in result]
+        ids=set([d['CRGStudyID'] for d in result])
+        ids=list(ids)
 
 
         esknn.set_index_name("tblstudy")#get study metadata
@@ -224,7 +226,7 @@ def study_from_any_id():
     else:
         return {
                 "status": 400,
-                "response": "Your request did not include a search query. Try including a key-value pair in this format: {\"input\":\"title:\"genome dried\"~15\"} "
+                "response": "Your request did not include a search query. Try including a key-value pair in this format: {\"input\":\"title:\"schizophrenia risperidone\"~3\"} "
             }
 
     return {
