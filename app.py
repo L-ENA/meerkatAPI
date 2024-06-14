@@ -132,19 +132,19 @@ def reports_from_studyid():
     ids = data.get('input', False)
     print(ids)
 
-    esknn.set_index_name("tbl_export")
+    esknn.set_index_name("tblstudyreport")
 
     ret_field="CRGStudyID"#the field to search
 
     if ids:
         result = esknn.retrieve_documents(ids,ret_field=ret_field)#get report ID data from study ids
-        ids=[d['ReportNumber'] for d in result]
+        ids=[d['CRGReportID'] for d in result]
         stids = [d['CRGStudyID'] for d in result]
         assert len(ids)==len(stids)
 
 
         esknn.set_index_name("tblreport")#get study metadata
-        ret_field = "ReportNumber"  # the field to search
+        ret_field = "CRGReportID"  # the field to search
         #
         ids=list(set(ids))
         result = esknn.retrieve_documents(ids, ret_field=ret_field)
@@ -187,8 +187,10 @@ def study_from_any_id():
     dat_type=data.get('table', False)
 
     if dat_type=='report':
-        esknn.set_index_name("tbl_export")
-        ret_field="ReportNumber"#the field to search
+        # esknn.set_index_name("tbl_export")
+        # ret_field="ReportNumber"#the field to search
+        esknn.set_index_name("tblstudyreport")
+        ret_field="CRGReportID"#the field to search
     elif dat_type=='condition':
         esknn.set_index_name("tblstudyhealthcarecondition")
         ret_field="HealthCareConditionID"#the field to search
